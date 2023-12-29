@@ -1,5 +1,5 @@
 ---
-title: Hi over there 👋 🤠 , welcome to my blog
+title: Hi over there 👋 🤠 , Welcome
 ---
 
 ## Introduction
