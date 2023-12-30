@@ -208,7 +208,69 @@ Because the body of the *delay* gets evaluated only once, the mail server is pro
 **Concepts**
 1. You can deliver a result to a *promise* only once
 2. A program will block if you try to deref a promise until you deliver a result to it
-3. 
+3. For the promise deref not to block forever, it is better supplied with a timeout and a default return value
+```clojure
+(let [p (promise)]
+  (deref p 100 "timed out"))
+```
 
-### Queue Time, heeeeh!
+#### Using Future and Promise to Prevent Reference Cell Concurrency
+Suppose you have a list of API calls, and you need to update some value once any of these calls succeed.
+You can view  these calls as independent threads each trying to access some cell by updating it, we can prevent this from happening by using *Promise* since we can only write once to a promise
+```clojure
+(def yak-butter-international
+  {:store "Yak Butter International"
+    :price 90
+    :smoothness 90})
+(def butter-than-nothing
+  {:store "Butter Than Nothing"
+   :price 150
+   :smoothness 83})
+;; This is the butter that meets our requirements
+(def baby-got-yak
+  {:store "Baby Got Yak"
+   :price 94
+   :smoothness 99})
+
+(defn mock-api-call
+  [result]
+  (Thread/sleep 1000)
+  result)
+
+(defn satisfactory?
+  "If the butter meets our criteria, return the butter, else return false"
+  [butter]
+  (and (<= (:price butter) 100)
+       (>= (:smoothness butter) 97)
+       butter))
+```
+If we run the above synchronously
+```clojure
+(time (some (comp satisfactory? mock-api-call)
+            [yak-butter-international butter-than-nothing baby-got-yak]))
+; => "Elapsed time: 3002.132 msecs"
+; => {:store "Baby Got Yak", :smoothness 99, :price 94}
+```
+If we used Promise and future
+```clojure
+(time
+ (let [butter-promise (promise)]
+   (doseq [butter [yak-butter-international butter-than-nothing baby-got-yak]]
+     (future (if-let [satisfactory-butter (satisfactory? (mock-api-call butter))]
+               (deliver butter-promise satisfactory-butter))))
+   (println "And the winner is:" @butter-promise)))
+; => "Elapsed time: 1002.652 msecs"
+; => And the winner is: {:store Baby Got Yak, :smoothness 99, :price 94}
+```
+
+#### Using Future and Promise to register Callbacks
+
+```clojure
+(let [ferengi-wisdom-promise (promise)]
+  (future (println "Here's some Ferengi wisdom:" @ferengi-wisdom-promise))
+  (Thread/sleep 100)
+  (deliver ferengi-wisdom-promise "Whisper your way to success."))
+; => Here's some Ferengi wisdom: Whisper your way to success.
+```
+This example creates a future that begins executing immediately. However, the future’s thread is blocking because it’s waiting for a value to be delivered to ferengi-wisdom-promise. After 100 milliseconds, you deliver the value and the println statement in the future runs.### Queue Time, heeeeh!
 
