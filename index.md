@@ -2,6 +2,9 @@
 title: Hi over there 👋 🤠 , Welcome
 ---
 
+A skeptical functional programmer whose desires turned out to be a liberation from the Van Neumann style of coding.
+Enjoy the blog!!!
+
 ## Introduction
 My name is **Ahmed** and I do **Software Engineering**
 
