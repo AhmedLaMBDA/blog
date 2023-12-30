@@ -1,6 +1,6 @@
 ---
 title: Concurrent and Parallel Programming - in Clojure
-date: 31-12-2023
+date: 2023-12-31
 ---
 
 # Overview
