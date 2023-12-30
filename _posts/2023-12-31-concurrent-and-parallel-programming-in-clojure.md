@@ -272,5 +272,53 @@ If we used Promise and future
   (deliver ferengi-wisdom-promise "Whisper your way to success."))
 ; => Here's some Ferengi wisdom: Whisper your way to success.
 ```
-This example creates a future that begins executing immediately. However, the future’s thread is blocking because it’s waiting for a value to be delivered to ferengi-wisdom-promise. After 100 milliseconds, you deliver the value and the println statement in the future runs.### Queue Time, heeeeh!
+This example creates a future that begins executing immediately. However, the future’s thread is blocking because it’s waiting for a value to be delivered to ferengi-wisdom-promise. After 100 milliseconds, you deliver the value and the println statement in the future runs.
 
+### Queue Time, heeeeh!
+One characteristic The Three Concurrency Goblins have in common is that they all involve tasks concurrently accessing a shared resource—a variable, a printer in an uncoordinated way. If you want to ensure that only one task will access a resource at a time, you can place the resource access portion of a task on a queue that’s executed serially.
+
+Let's implement that
+
+First, we will create a macro wait, that just waits for some milliseconds and then executes the body
+```clojure
+(defmacro wait
+  "Sleep `timeout` seconds before evaluating body"
+  [timeout & body]
+  `(do (Thread/sleep ~timeout) ~@body))
+```
+Now let's say we have three tasks, each task part of them needs to occur sequentially and another part can be executed concurrently.
+```clojure
+(let [saying3 (promise)]
+  (future (deliver saying3 (wait 100 "Cheerio!")))
+  @(let [saying2 (promise)]
+     (future (deliver saying2 (wait 400 "Pip pip!")))
+     @(let [saying1 (promise)]
+        (future (deliver saying1 (wait 200 "'Ello, gov'na!")))
+        (println @saying1)
+        saying1)
+     (println @saying2)
+     saying2)
+  (println @saying3)
+  saying3)
+```
+In the above, we need to make sure that the printing of saying1 happens before the printing of saying2 and so on while we also wait for the part of the task that can occur concurrently (which is waiting for what to be printed).
+
+We ensure that by creating a promise for each task (the printing part) to create a corresponding future that will deliver a concurrently computed value to the promise.
+
+let's create a macro that does exactly the above
+and work as follows:
+```clojure
+(-> (enqueue saying (wait 200 "'Ello, gov'na!") (println @saying))
+    (enqueue saying (wait 400 "Pip pip!") (println @saying))
+    (enqueue saying (wait 100 "Cheerio!") (println @saying)))
+(defmacro enqueue
+   ([q concurrent-promise-name concurrent serialized]
+    `(let [~concurrent-promise-name (promise)]
+      (future (deliver ~concurrent-promise-name ~concurrent))
+       (deref ~q)
+      ~serialized
+      ~concurrent-promise-name))
+   ([concurrent-promise-name concurrent serialized]
+   `(enqueue (future) ~concurrent-promise-name ~concurrent ~serialized)))
+
+```
