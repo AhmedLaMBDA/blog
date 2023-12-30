@@ -95,17 +95,120 @@ In a serial code execution, we bind these three events together
 3. Requiring the task's result
 
 ```clojure
-web-api/get :some-api-call
+(web-api/get :some-api-call)
 ```
 When Clojure sees the above, it executes it and waits for the result, *blocking* until the API call finishes.
 
 > **Clojure tries to decouple these chronological bindings through *futures*, *delays* and *promises*, which allow us to separate task definition, task execution, and requiring the result**
 
 ### Futures
+*To **define** a task and place it on another thread without requiring the result immediately, you use future*
+```clojure
+(future (Thread/sleep 4000)
+        (println "I'll print after 4 seconds"))
+(println "I'll print immediately")
+```
+***Concepts***
+1. Future function returns a *reference value*
+2. Use *reference value* to request a *future*'s result
+3. If the *future* isn't done computing the result while requesting, you'll have to wait
+4. You can pass `deref` a number of milliseconds to wait along with the value to return if the `deref` times out
+```clojure
+(deref (future (Thread/sleep 1000) 0) 10 5)
+; => 5
+```
+5. Dereferencing the *future* can be done using `deref` function or the `@` reader macro
+6. A *future*'s result is the last expression evaluated in its body
+7. *Future*'s body executes only once, and its value gets cached
 
+```clojure
+(let [result (future (println "this prints once")
+                     (+ 1 1))]
+  (println "deref: " (deref result))
+  (println "@: " @result))
+; => "this prints once"
+; => deref: 2
+; => @: 2
+```
+
+```clojure
+(let [result (future (Thread/sleep 3000)
+                     (+ 1 1))]
+  (println "The result is: " @result)
+  (println "It will be at least 3 seconds before I print"))
+; => The result is: 2
+; => It will be at least 3 seconds before I print
+```
+8. You can interrogate a future using `realized?` to see if its done running
+```clojure
+(realized? (future (Thread/sleep 1000)))
+; => false
+
+(let [f (future)]
+  @f
+  (realized? f))
+; => true
+```
 ### Delays
+*Allow you to **define** a task **without** having to **execute** it or **require** the result immediately*
+```clojure
+(def jackson-5-delay
+  (delay (let [message "Whatever, just call me"]
+           (println "First deref:" message)
+           message)))
+```
+Nothing is printed!!! as expected
+***Concepts***
+1. You can evaluate the delay and get its result by dereferencing it or by using force
+```clojure
+(force jackson-5-delay)
+; => First deref: Whatever just call me
+; => "Whatever, just call me"
+```
+2. Run only once, and it's result is cached
+```clojure
+@jackson-5-delay
+; => "Whatever, just call me"
+```
+
+#### Using Future & Delay to Prevent Mutual Exclusion
+Suppose you have a list of images you want to upload
+```clojure
+(def images ["serious.jpg" "fun.jpg" "playful.jpg"])
+```
+and you want to notify the owner as soon as the first one is up through a mail server that sends emails
+```clojure
+(defn email-user
+  [email-address]
+  (println "Sending image notification to" email-address))
+(defn upload-document
+  "Needs to be implemented"
+  [image]
+  true)
+```
+Now let's combine *future* so we can upload the documents and use *delay* to guard the email server resource from mutual exclusion that might happen from these threads created by the *future*s
+```clojure
+(let [notify (delay (email-user "and-my-axe@gmail.com"))]
+  (doseq [image images]
+    (future (upload-document image)
+            (force notify))))
+```
+The body of the *delay* gets evaluated the first time one of the *future*s created by the doseq form evaluates (force notify). Even though (force notify) will be evaluated three times, the delay body is evaluated only once
+
+Because the body of the *delay* gets evaluated only once, the mail server is protected from the *future*s threads trying to send the same email.
 
 ### Promises
+*The ultimate **abstraction**, **promises** allow you to express that you **expect** a result **without** having to **define the task** that should produce it or when the task should run. Create using **promise** and deliver results using **deliver*** 
+```clojure
+(def my-promise (promise))
+(deliver my-promise (+ 1 2))
+@my-promise
+; => 3
+```
+**Concepts**
+1. You can deliver a result to a *promise* only once
+2. A program will block if you try to deref a promise until you deliver a result to it
+3. 
 
 ### Queue Time, heeeeh!
 
