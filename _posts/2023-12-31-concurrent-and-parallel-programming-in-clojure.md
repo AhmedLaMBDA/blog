@@ -3,11 +3,11 @@ title: Concurrent and Parallel Programming - in Clojure
 date: 2023-12-31
 ---
 
-# Overview
-## Elementary Concepts
+## Overview
+### Elementary Concepts
 Concurrent and parallel programming involves a lot of details from all levels of program execution, from the hardware to the operating system to programming
 language libraries to the code.
-### Managing Multiple Tasks vs. Executing Tasks Simultaneously
+#### Managing Multiple Tasks vs. Executing Tasks Simultaneously
 **Concurrency**: Managing more than one task at the same time.
 
 > *Note that this doesn't mean we're executing these tasks at the same time,
@@ -22,7 +22,7 @@ language libraries to the code.
 
 **Distributed Systems**: They are a special version of parallelism, where processors are distributed across different machines and they communicate throw Network
 
-### Blocking vs Non-blocking
+#### Blocking vs Non-blocking
 They're mostly referred to in I/O operations (reading a file/waiting for an HTTP request)
 
 **Blocking**: Tasks are executed one after another, they are called *executed synchronously*
@@ -33,7 +33,7 @@ They're mostly referred to in I/O operations (reading a file/waiting for an HTTP
 > which can executed in parallel and manage the risks that arise from doing it as well*
 
 
-## Threads
+### Threads
 Serial code is a sequence of tasks, you indicate that tasks can be performed ***concurrently*** by putting them on a JVM Thread.
 
 **A thread** is a sub-program, that executes its instructions while sharing access to the whole program's state.
@@ -63,12 +63,12 @@ It could be:
 The process becomes deterministic again since the two processors will execute the two threads ***simultaneously***
 
 
-## The Three Challenges
+### The Three Challenges
 1. Reference Cells
 2. Mutual Exclusion
 3. Deadlock (Dwarven Berserkers) - The dining philosophers problem
 
-### Instructions for a Program with a Nondeterministic Outcome
+#### Instructions for a Program with a Nondeterministic Outcome
 ID	Instruction
 A1	WRITE X = 0
 A2	READ X
@@ -81,13 +81,13 @@ But if it follows *the order A1, A2, B1, A3, B2, X’s value will be 1*.
 
 > *The reference cell problem happens when two threads can read and write to the same location*
 
-### Mutual Exclusion
+#### Mutual Exclusion
 > *Two threads fight for access to some resource without any way to claim exclusive access to that resource.*
 For example, a write to a file, where both threads write for some time, the end result of the file will be corrupted with the function of the two threads
 
-### The dining philosophers problem - Clear. Right?!!!!
+#### The dining philosophers problem - Clear. Right?!!!!
 
-# Clojure Concurrency Model
+## Clojure Concurrency Model
 
 In a serial code execution, we bind these three events together
 1. Task definition
@@ -101,11 +101,11 @@ When Clojure sees the above, it executes it and waits for the result, *blocking*
 
 > **Clojure tries to decouple these chronological bindings through *futures*, *delays* and *promises*, which allow us to separate task definition, task execution, and requiring the result**
 
-## Futures
+### Futures
 
-## Delays
+### Delays
 
-## Promises
+### Promises
 
-## Queue Time, heeeeh!
+### Queue Time, heeeeh!
 
