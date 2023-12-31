@@ -3,6 +3,9 @@ title: Concurrent and Parallel Programming - in Clojure
 date: 2023-12-31
 ---
 
+* auto-gen TOC:
+{:toc}
+
 ## Overview
 ### Elementary Concepts
 Concurrent and parallel programming involves a lot of details from all levels of program execution, from the hardware to the operating system to programming
