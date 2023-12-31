@@ -103,12 +103,15 @@ When Clojure sees the above, it executes it and waits for the result, *blocking*
 
 ### Futures
 *To **define** a task and place it on another thread without requiring the result immediately, you use future*
+
 ```clojure
 (future (Thread/sleep 4000)
         (println "I'll print after 4 seconds"))
 (println "I'll print immediately")
 ```
+
 ***Concepts***
+
 1. Future function returns a *reference value*
 2. Use *reference value* to request a *future*'s result
 3. If the *future* isn't done computing the result while requesting, you'll have to wait
@@ -140,6 +143,7 @@ When Clojure sees the above, it executes it and waits for the result, *blocking*
 ; => It will be at least 3 seconds before I print
 ```
 8. You can interrogate a future using `realized?` to see if its done running
+
 ```clojure
 (realized? (future (Thread/sleep 1000)))
 ; => false
@@ -149,6 +153,7 @@ When Clojure sees the above, it executes it and waits for the result, *blocking*
   (realized? f))
 ; => true
 ```
+
 ### Delays
 *Allow you to **define** a task **without** having to **execute** it or **require** the result immediately*
 ```clojure
@@ -158,7 +163,9 @@ When Clojure sees the above, it executes it and waits for the result, *blocking*
            message)))
 ```
 Nothing is printed!!! as expected
+
 ***Concepts***
+
 1. You can evaluate the delay and get its result by dereferencing it or by using force
 ```clojure
 (force jackson-5-delay)
