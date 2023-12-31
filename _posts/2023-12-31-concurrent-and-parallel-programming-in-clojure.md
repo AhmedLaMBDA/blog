@@ -72,12 +72,14 @@ The process becomes deterministic again since the two processors will execute th
 3. Deadlock (Dwarven Berserkers) - The dining philosophers problem
 
 #### Instructions for a Program with a Nondeterministic Outcome
-ID	Instruction
-A1	WRITE X = 0
-A2	READ X
-A3	WRITE X = X + 1
-B1	READ X
-B2	WRITE X = X + 1
+
+| ID |	Instruction        |
+| -- |  -----------------  |
+| A1 |	WRITE X = 0        |
+| A2 |	READ X             |
+| A3 |	WRITE X = X + 1    |
+| B1 |	READ X             |
+| B2 |	WRITE X = X + 1    |
 
 If the processor follows *the order A1, A2, A3, B1, B2, then X will have a value of 2*, as you’d expect. 
 But if it follows *the order A1, A2, B1, A3, B2, X’s value will be 1*.
