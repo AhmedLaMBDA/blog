@@ -196,4 +196,4 @@ Here's how *commute* behave
 1. Read the *ref's* current state outside the transaction
 2. Run the commute function again using the current state
 3. Commit the result
-> *It’s important that you only use commute when you’re sure that it’s not possible for your refs to end up in an invalid state. Let’s look at examples of safe and unsafe uses of commute*
+> *It’s important that you only use commute when you’re sure that it’s not possible for your refs to end up in an invalid state*
